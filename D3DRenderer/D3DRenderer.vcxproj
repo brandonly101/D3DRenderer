@@ -70,8 +70,8 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>$(ProjectDir)\include;$(ProjectDir)\include\SDL2-2.0.5\include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(ProjectDir)\lib;$(ProjectDir)\lib\SDL2-2.0.5\lib\x86;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(ProjectDir)\include;$(ProjectDir)\include\SDL2-2.0.5;$(IncludePath)</IncludePath>
+    <LibraryPath>$(ProjectDir)\lib;$(ProjectDir)\lib;$(LibraryPath)</LibraryPath>
     <SourcePath>C:\Users\brand\Desktop\D3DRenderer\D3DRenderer\src;$(SourcePath)</SourcePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">

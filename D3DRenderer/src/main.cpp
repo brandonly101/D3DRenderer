@@ -1,6 +1,8 @@
 // Using SDL and standard IO
 #include <SDL.h>
 #include <stdio.h>
+#include <d3d11.h>
+#include <SimpleMath.h>
 
 // Screen dimension constants
 const int SCREEN_WIDTH = 1280;
