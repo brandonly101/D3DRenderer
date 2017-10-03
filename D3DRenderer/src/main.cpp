@@ -1,6 +1,6 @@
 // Using SDL and standard IO
-#include <SDL.h>
 #include <stdio.h>
+#include <SDL.h>
 #include <d3d11.h>
 #include <SimpleMath.h>
 
@@ -35,7 +35,7 @@ int main(int argc, char* args[])
     }
     SDL_UpdateWindowSurface(window);
 
-
+    SDL_Delay(3000);
 
     SDL_DestroyWindow(window);
 
