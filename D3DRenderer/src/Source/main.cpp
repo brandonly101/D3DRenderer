@@ -3,30 +3,41 @@
 #include <SDL.h>
 #include <SDL_syswm.h>
 #include <wrl.h>
+#include <windows.h>
+#include <ctime>
 
 #include <dxgi.h>
 #include <d3d11.h>
-
-#include <SimpleMath.h>
+#include <d3dcompiler.h>
 
 #pragma comment(lib, "dxgi.lib")
 #pragma comment(lib, "d3d11.lib")
 
+#include <SimpleMath.h>
+
 using namespace DirectX::SimpleMath;
 
 // Screen dimension constants
-const int SCREEN_WIDTH = 1280;
-const int SCREEN_HEIGHT = 720;
+const int SCREEN_WIDTH = 1600;
+const int SCREEN_HEIGHT = 900;
+
+const double MS_PER_FRAME = 100.0 / 6.0;
 
 void InitD3D();
+void InitPipeline();
 void ReleaseD3D();
+void Update();
 void Render();
 
 IDXGISwapChain* swapChain;
 ID3D11Device* device;
 ID3D11DeviceContext* context;
 HWND hWnd;
-ID3D11RenderTargetView *backBuffer;
+ID3D11RenderTargetView* backBuffer;
+
+// Shader Stuff
+ID3D11VertexShader* vertexShader;
+ID3D11PixelShader* pixelShader;
 
 int main(int argc, char* args[])
 {
@@ -68,17 +79,32 @@ int main(int argc, char* args[])
     // Init D3D11
     InitD3D();
 
+    // Game loop!
     bool running = true;
     SDL_Event event;
+    time_t lastTimer;
+    time_t currentTimer;
     while (running)
     {
-        while (SDL_PollEvent(&event))
+        lastTimer = time(NULL);
+
+        // Poll for input events
+        SDL_PollEvent(&event);
+        if (event.type == SDL_QUIT)
         {
-            if (event.type == SDL_QUIT)
-            {
-                running = false;
-            }
+            running = false;
         }
+
+        // Update things in scene
+        Update();
+
+        // Render things in scene
+        Render();
+
+        // Sleep for remaining duration ...
+        currentTimer = time(NULL);
+        double timestep = difftime(currentTimer, lastTimer);
+        Sleep(MS_PER_FRAME - timestep);
     }
 
     // Release D3D objects
@@ -155,6 +181,13 @@ void InitD3D()
     swapChain->Present(0, 0);
 }
 
+void InitPipeline()
+{
+    //ID3DBlob *vShader, *pShader;
+    //D3DCompileFromFile(L"shaders.hlsl", NULL, D3D_COMPILE_STANDARD_FILE_INCLUDE, "vertexShader", "vs_5_0", 0, 0, &vShader, 0);
+    //D3DCompileFromFile(L"shaders.hlsl", NULL, D3D_COMPILE_STANDARD_FILE_INCLUDE, "pixelShader", "ps_5_0", 0, 0, &pShader, 0);
+}
+
 void ReleaseD3D()
 {
     swapChain->Release();
@@ -163,12 +196,19 @@ void ReleaseD3D()
     context->Release();
 }
 
+void Update()
+{
+
+}
+
 void Render()
 {
     // Clear the back buffer
     context->ClearRenderTargetView(backBuffer, Color(0.0f, 0.2f, 0.4f, 1.0f));
 
     // Do 3D rendering stuff (in the future)
+    // Let's draw a Cube! ...
+
 
     // Switch back buffer and front buffer
     swapChain->Present(0, 0);
