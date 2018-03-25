@@ -15,29 +15,31 @@
 
 #include <SimpleMath.h>
 
-using namespace DirectX::SimpleMath;
+#define SHADER_BUFFER_SIZE 4096
 
 // Screen dimension constants
-const int SCREEN_WIDTH = 1600;
-const int SCREEN_HEIGHT = 900;
+#define SCREEN_WIDTH 1600
+#define SCREEN_HEIGHT 900
+
+using namespace DirectX::SimpleMath;
 
 const double MS_PER_FRAME = 100.0 / 6.0;
 
 void InitD3D();
-void InitPipeline();
+void InitShaders();
 void ReleaseD3D();
 void Update();
 void Render();
 
-IDXGISwapChain* swapChain;
-ID3D11Device* device;
-ID3D11DeviceContext* context;
+IDXGISwapChain* SwapChain;
+ID3D11Device* Device;
+ID3D11DeviceContext* Context;
 HWND hWnd;
-ID3D11RenderTargetView* backBuffer;
+ID3D11RenderTargetView* BackBuffer;
 
-// Shader Stuff
-ID3D11VertexShader* vertexShader;
-ID3D11PixelShader* pixelShader;
+// Vertex and Pixel Shaders
+ID3D11VertexShader* VertexShader;
+ID3D11PixelShader* PixelShader;
 
 int main(int argc, char* args[])
 {
@@ -104,7 +106,7 @@ int main(int argc, char* args[])
         // Sleep for remaining duration ...
         currentTimer = time(NULL);
         double timestep = difftime(currentTimer, lastTimer);
-        Sleep(MS_PER_FRAME - timestep);
+        Sleep((DWORD)(MS_PER_FRAME - timestep));
     }
 
     // Release D3D objects
@@ -147,21 +149,21 @@ void InitD3D()
             NULL,
             D3D11_SDK_VERSION,
             &swapChainDesc,
-            &swapChain,
-            &device,
+            &SwapChain,
+            &Device,
             NULL,
-            &context);
+            &Context);
 
     // Get address of back buffer
     ID3D11Texture2D *pBackBuffer;
-    swapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)&pBackBuffer);
+    SwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)&pBackBuffer);
 
     // Set the back buffer address to create the render target
-    device->CreateRenderTargetView(pBackBuffer, NULL, &backBuffer);
+    Device->CreateRenderTargetView(pBackBuffer, NULL, &BackBuffer);
     pBackBuffer->Release();
 
     // Set the render target as the back buffer
-    context->OMSetRenderTargets(1, &backBuffer, NULL);
+    Context->OMSetRenderTargets(1, &BackBuffer, NULL);
 
     // Set the viewport
     D3D11_VIEWPORT viewport;
@@ -172,28 +174,46 @@ void InitD3D()
     viewport.Width = SCREEN_WIDTH;
     viewport.Height = SCREEN_HEIGHT;
 
-    context->RSSetViewports(1, &viewport);
+    Context->RSSetViewports(1, &viewport);
 
     // Clear the back buffer
-    context->ClearRenderTargetView(backBuffer, Color(0.0f, 0.2f, 0.4f, 1.0f));
+    Context->ClearRenderTargetView(BackBuffer, Color(0.0f, 0.2f, 0.4f, 1.0f));
 
     // Switch back buffer and front buffer
-    swapChain->Present(0, 0);
+    SwapChain->Present(0, 0);
 }
 
-void InitPipeline()
+void InitShaders()
 {
-    //ID3DBlob *vShader, *pShader;
-    //D3DCompileFromFile(L"shaders.hlsl", NULL, D3D_COMPILE_STANDARD_FILE_INCLUDE, "vertexShader", "vs_5_0", 0, 0, &vShader, 0);
-    //D3DCompileFromFile(L"shaders.hlsl", NULL, D3D_COMPILE_STANDARD_FILE_INCLUDE, "pixelShader", "ps_5_0", 0, 0, &pShader, 0);
+    FILE* fileShader;
+    BYTE shaderBuffer[SHADER_BUFFER_SIZE];
+    size_t length;
+
+    // Read in bytecode and create vertex shader
+    fopen_s(&fileShader, "VertexShader.cso", "rb");
+    length = fread_s(shaderBuffer, SHADER_BUFFER_SIZE, 1, SHADER_BUFFER_SIZE, fileShader);
+    Device->CreateVertexShader((void*)shaderBuffer, length, NULL, &VertexShader);
+    fclose(fileShader);
+
+    // Read in bytecode and create pixel shader
+    fopen_s(&fileShader, "PixelShader.cso", "rb");
+    length = fread_s(shaderBuffer, SHADER_BUFFER_SIZE, 1, SHADER_BUFFER_SIZE, fileShader);
+    Device->CreatePixelShader((void*)shaderBuffer, length, NULL, &PixelShader);
+    fclose(fileShader);
+
+    // Set vertex and pixel shaders for context
+    Context->VSSetShader(VertexShader, NULL, 0);
+    Context->PSSetShader(PixelShader, NULL, 0);
 }
 
 void ReleaseD3D()
 {
-    swapChain->Release();
-    backBuffer->Release();
-    device->Release();
-    context->Release();
+    VertexShader->Release();
+    PixelShader->Release();
+    SwapChain->Release();
+    BackBuffer->Release();
+    Device->Release();
+    Context->Release();
 }
 
 void Update()
@@ -204,12 +224,11 @@ void Update()
 void Render()
 {
     // Clear the back buffer
-    context->ClearRenderTargetView(backBuffer, Color(0.0f, 0.2f, 0.4f, 1.0f));
+    Context->ClearRenderTargetView(BackBuffer, Color(0.0f, 0.2f, 0.4f, 1.0f));
 
     // Do 3D rendering stuff (in the future)
     // Let's draw a Cube! ...
 
-
     // Switch back buffer and front buffer
-    swapChain->Present(0, 0);
+    SwapChain->Present(0, 0);
 }
